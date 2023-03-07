@@ -1,9 +1,20 @@
+let envPath = __dirname + "/../.env"
+require('dotenv').config({path:envPath});
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-mongoose.connect(process.env.DB);
+mongoose.Promise= global.Promise;
 
-// Movie schema
+try {
+    mongoose.connect( process.env.DB, {useNewUrlParser: true, useUnifiedTopology: true}, () =>
+        console.log("connected"));
+} catch(error) {
+    console.log("could not connect");
+}
+mongoose.set('useCreateIndex', true);
+
+
+//Movie Schema
 var MovieSchema = new Schema({
     title: { type: String, required: true, index: { unique: true }},
     releaseYear: { type: String, required: true},
@@ -12,5 +23,6 @@ var MovieSchema = new Schema({
     imageURL: String
 });
 
-// return the model
+
+
 module.exports = mongoose.model('Movie', MovieSchema);
