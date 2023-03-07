@@ -95,8 +95,7 @@ router.route('/movies')
                 if (err) throw err;
                 else
                     console.log(movies);
-                    res = res.status(200);
-                    res.json({success: true, msg: 'GET movies.'});
+                    return res.status(200).json({success: true, movies: movies});
             });
         }
     )
