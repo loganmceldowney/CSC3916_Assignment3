@@ -4,6 +4,8 @@ File: Server.js
 Description: Web API scaffolding for Movie API
  */
 
+let envPath = __dirname + "/.env"
+require('dotenv').config({path:envPath});
 var express = require('express');
 var bodyParser = require('body-parser');
 var passport = require('passport');
@@ -40,7 +42,7 @@ function getJSONObjectForMovieRequirement(req) {
 
     return json;
 }
-
+// signup
 router.post('/signup', function(req, res) {
     if (!req.body.username || !req.body.password) {
         res.json({success: false, msg: 'Please include both username and password to signup.'})
@@ -62,7 +64,29 @@ router.post('/signup', function(req, res) {
         });
     }
 });
+// signin
+router.post('/signin', function (req, res) {
+    var userNew = new User();
+    userNew.username = req.body.username;
+    userNew.password = req.body.password;
 
+    User.findOne({ username: userNew.username }).select('name username password').exec(function(err, user) {
+        if (err) {
+            res.send(err);
+        }
+
+        user.comparePassword(userNew.password, function(isMatch) {
+            if (isMatch) {
+                var userToken = { id: user.id, username: user.username };
+                var token = jwt.sign(userToken, process.env.SECRET_KEY);
+                res.json ({success: true, token: 'JWT ' + token});
+            }
+            else {
+                res.status(401).send({success: false, msg: 'Authentication failed.'});
+            }
+        })
+    })
+});
 router.route('/movies')
 
     //Get the movies
@@ -146,8 +170,8 @@ router.route('/movies')
         }
     });
 
+
 app.use('/', router);
 app.listen(process.env.PORT || 8080);
 module.exports = app; // for testing only
-
 
