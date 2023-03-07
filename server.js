@@ -135,29 +135,26 @@ router.route('/movies')
 
 
     //Update movies
-   .put(authJwtController.isAuthenticated, function(req, res) {
-       if (!req.body.title) {
-           res.json({success: false, msg: 'Please pass a Movie Title to update.'});
-       } else {
-           Movie.findOne({title: req.body.title}, function (err, movies) {
-               if (err) throw err;
-               else {
-                   //var movie = new Movie();
-                   movies.title = req.body.title;
-                   movies.releaseYear = req.body.releaseYear;
-                   movies.genre = req.body.genre;
-                   movies.actors = req.body.actors;
-                   movies.imageURL = req.body.imageURL;
-
-                   movies.save(function (err) {
-                       if (err) throw err;
-
-                       res.json({success: true, msg: 'Movie has been successfully updated.'});
-                   })
-               }
-           })
-       }
-   })
+    .put(authJwtController.isAuthenticated, function(req, res) {
+        if (!req.params.movieTitle) {
+            res.json({success: false, msg: 'Please pass a Movie Title to update.'});
+        } else {
+            Movie.findOne({title: req.params.movieTitle}, function (err, movie) {
+                if (err) throw err;
+                else {
+                    movie.releaseYear = req.body.releaseYear || movie.releaseYear;
+                    movie.genre = req.body.genre || movie.genre;
+                    movie.actors = req.body.actors || movie.actors;
+     
+                    movie.save(function (err) {
+                        if (err) throw err;
+     
+                        res.json({success: true, msg: 'Movie has been successfully updated.'});
+                    })
+                }
+            })
+        }
+     })
 
     //delete a movie
     .delete(authJwtController.isAuthenticated, function(req, res) {
