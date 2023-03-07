@@ -101,34 +101,39 @@ router.route('/movies')
         }
     )
 
-    //Save movies
-    .post( authJwtController.isAuthenticated, function (req, res) {
-        if (!req.body.title || !req.body.genre || !req.body.releaseYear || !req.body.actors) {
-            res.json({success: false, msg: 'Please pass in all 4 required criteria in order to save a movie!'});
-        }
-        else {
-            if(req.body.actors.length < 3) {
-                res.json({ success: false, message: 'Please include at least three actors.'});
-            }
-            else {
+    .post(authJwtController.isAuthenticated, function (req, res) {
+    if (!req.body.title || !req.body.genre || !req.body.releaseYear || !req.body.actors) {
+        res.json({success: false, msg: 'Please pass in all 4 required criteria in order to save a movie!'});
+    } else {
+        if (req.body.actors.length < 3) {
+            res.json({ success: false, message: 'Please include at least three actors.' });
+        } else {
+            // Check if movie already exists
+            Movie.findOne({ title: req.body.title }, function (err, existingMovie) {
+                if (err) {
+                    return res.send(err);
+                }
+                if (existingMovie) {
+                    return res.json({ success: false, message: 'A movie with that title already exists.' });
+                }
+                // Save the movie
                 var movie = new Movie();
                 movie.title = req.body.title;
                 movie.releaseYear = req.body.releaseYear;
                 movie.genre = req.body.genre;
                 movie.actors = req.body.actors;
 
-                movie.save(function(err, movies) {
+                movie.save(function (err) {
                     if (err) {
-                        if (err.code == 11000)
-                            return res.json({ success: false, message: 'A movie with that title already exists.'});
-                        else
-                            return res.send(err);
+                        return res.send(err);
                     }
                     res.json({ message: 'Movie has been successfully created.' });
                 });
-            }
+            });
         }
-    })
+    }
+})
+
 
     //Update movies
    .put(authJwtController.isAuthenticated, function(req, res) {
